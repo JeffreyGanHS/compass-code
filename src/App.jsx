@@ -14,7 +14,6 @@ const css = `
 @keyframes twinkle{0%,100%{opacity:0;}50%{opacity:var(--mo,0.3);}}
 @keyframes breathe{0%,100%{opacity:0.3;}50%{opacity:0.85;}}
 @keyframes voidPulse{0%,100%{box-shadow:0 0 0 0 rgba(200,169,110,0.06);}50%{box-shadow:0 0 40px 16px rgba(200,169,110,0.04);}}
-@keyframes navGlow{from{opacity:0;transform:translateX(-50%) scaleX(0.5);}to{opacity:1;transform:translateX(-50%) scaleX(1);}}
 .star{position:absolute;width:1px;height:1px;border-radius:50%;background:#9A9488;animation:twinkle var(--dur,4s) ease-in-out infinite;opacity:0;}
 .wisdom{font-family:'Cormorant Garamond',serif;font-style:italic;line-height:1.85;}
 .cinzel{font-family:'Cinzel',serif;}
@@ -28,14 +27,45 @@ textarea:focus,button:focus{outline:none;}
 .void-circle{animation:voidPulse 2.2s ease-in-out infinite;}
 .prac-body{max-height:0;overflow:hidden;transition:max-height 1.1s cubic-bezier(0.4,0,0.2,1);}
 .prac-body.open{max-height:900px;}
-/* Desktop layout */
-.desktop-shell{display:grid;grid-template-columns:260px 1fr;grid-template-rows:100vh;width:100vw;height:100vh;overflow:hidden;}
-.sidebar{display:flex;flex-direction:column;border-right:1px solid #1E1C18;background:#0C0C0A;position:relative;overflow:hidden;}
-.main-content{display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── RESPONSIVE SHELL ── */
+/* Mobile first — bottom nav */
+.app-shell{display:flex;flex-direction:column;width:100vw;height:100vh;overflow:hidden;}
+.sidebar{display:none;}
+.main-content{display:flex;flex-direction:column;flex:1;overflow:hidden;}
 .content-scroll{flex:1;overflow-y:auto;overflow-x:hidden;}
-/* Hover effects */
+.mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;height:64px;
+  background:linear-gradient(to top,#0A0A0A 70%,transparent);
+  align-items:center;justify-content:center;
+  gap:clamp(0.5rem,4vw,2rem);z-index:50;padding:0 0.5rem;}
+.mobile-topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.25rem 0;flex-shrink:0;}
+
+/* Tablet and up — show sidebar */
+@media(min-width:768px){
+  .app-shell{flex-direction:row;}
+  .sidebar{display:flex;flex-direction:column;width:220px;flex-shrink:0;
+    border-right:1px solid #1E1C18;background:#0C0C0A;
+    position:relative;overflow:hidden;}
+  .mobile-nav{display:none;}
+  .mobile-topbar{display:none;}
+  .main-content{flex:1;min-width:0;}
+}
+
+/* Desktop — wider sidebar */
+@media(min-width:1024px){
+  .sidebar{width:260px;}
+}
+
+/* Mobile grids — stack to single column */
+@media(max-width:767px){
+  .two-col{grid-template-columns:1fr !important;}
+  .three-col{grid-template-columns:1fr !important;}
+  .tarot-grid{grid-template-columns:repeat(3,1fr) !important;}
+}
+
+/* Nav item hover */
 .nav-item{transition:all 0.6s cubic-bezier(0.4,0,0.2,1);}
-.nav-item:hover .nav-dot{background:#7A6640 !important;}
 .nav-item:hover .nav-label{color:#9A9488 !important;}
 `;
 
@@ -268,7 +298,7 @@ function ChamberThreshold({ onSave }) {
         <div style={{ marginTop: "2.5rem" }}>
           <Divider />
           <p className="cinzel" style={{ fontSize: "0.6rem", letterSpacing: "0.3em", textTransform: "uppercase", color: G.dimmer, marginBottom: "1.25rem" }}>Three doors open before you</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1rem" }}>
+          <div className="three-col" className="tarot-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1rem" }}>
             {doors.map((d, i) => {
               const [h, setH] = useState(false);
               return (
@@ -354,7 +384,7 @@ function ChamberOracle() {
       </div>
 
       {tab === "iching" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "start" }}>
+        <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "start" }}>
           <div>
             <p className="wisdom" style={{ fontSize: "1.05rem", color: G.dim, marginBottom: "2rem", lineHeight: 1.75 }}>Cast the yarrow. Ask nothing specific. Ask everything in general.</p>
             <div style={{ marginBottom: "2rem" }}>
@@ -380,7 +410,7 @@ function ChamberOracle() {
       {tab === "tarot" && (
         <div>
           <p className="wisdom" style={{ fontSize: "1.05rem", color: G.dim, marginBottom: "2rem" }}>Three cards: what was, what is, what approaches. Do not fear any card.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1rem", marginBottom: "2rem" }}>
+          <div className="tarot-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "1rem", marginBottom: "2rem" }}>
             {["Past", "Present", "Approaching"].map((pos, i) => {
               const c = cards?.[i];
               return (
@@ -401,7 +431,7 @@ function ChamberOracle() {
       )}
 
       {tab === "void" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "start" }}>
+        <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem", alignItems: "start" }}>
           <div>
             <p className="wisdom" style={{ fontSize: "1.05rem", color: G.dim, marginBottom: "0.6rem" }}>The Void does not explain. It echoes.</p>
             <p style={{ fontSize: "0.85rem", color: G.dim, marginBottom: "1.5rem" }}>Write your question — or your silence — into the circle.</p>
@@ -444,7 +474,7 @@ function ChamberPractice() {
       <h2 className="cinzel" style={{ fontSize: "1.6rem", fontWeight: 300, color: G.gold, marginBottom: "0.6rem", letterSpacing: "0.08em" }}>The Practice Ground</h2>
       <p style={{ fontSize: "0.88rem", color: G.dim, lineHeight: 1.7 }}>Not remedies. Not solutions. Only invitations to be present with what is.</p>
       <Divider />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+      <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
         {PRACTICES.map((p, i) => (
           <div key={i} onClick={() => setOpen(open === i ? null : i)}
             style={{ border: `1px solid ${open === i ? G.goldDim : G.border}`, padding: "1.75rem", cursor: "pointer", transition: "border-color 0.7s, background 0.7s", background: open === i ? "rgba(200,169,110,0.03)" : "transparent", gridColumn: open === i ? "1 / -1" : "auto" }}>
@@ -495,7 +525,7 @@ function ChamberShadow() {
   if (!entered) return (
     <div>
       <h2 className="cinzel" style={{ fontSize: "1.6rem", fontWeight: 300, color: G.rose, marginBottom: "2.5rem", letterSpacing: "0.08em" }}>The Shadow Foundry</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center", padding: "2rem 0" }}>
+      <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center", padding: "2rem 0" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: "4rem", color: G.rose, opacity: 0.4, marginBottom: "2rem" }}>☽</div>
           <SoftBtn onClick={() => setEntered(true)} color={G.rose} extraStyle={{ borderColor: "#5A3030" }}>I am ready to look</SoftBtn>
@@ -513,7 +543,7 @@ function ChamberShadow() {
   return (
     <div>
       <h2 className="cinzel" style={{ fontSize: "1.6rem", fontWeight: 300, color: G.rose, marginBottom: "2rem", letterSpacing: "0.08em" }}>The Shadow Foundry</h2>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem" }}>
+      <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "3rem" }}>
         <div>
           <p className="wisdom" style={{ fontSize: "1.15rem", color: G.text, lineHeight: 1.8, marginBottom: "1.5rem" }}>{SHADOW_QS[qi]}</p>
           <textarea value={txt} onChange={e => setTxt(e.target.value)} rows={6}
@@ -581,7 +611,7 @@ function ChamberReturn() {
       <h2 className="cinzel" style={{ fontSize: "1.6rem", fontWeight: 300, color: G.gold, marginBottom: "0.6rem", letterSpacing: "0.08em" }}>The Return</h2>
       <p style={{ fontSize: "0.88rem", color: G.dim, lineHeight: 1.7 }}>You do not leave the same as you arrived. No one does.</p>
       <Divider />
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center", padding: "2rem 0" }}>
+      <div className="two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4rem", alignItems: "center", padding: "2rem 0" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ width: 240, height: 240, borderRadius: "50%", border: `1px solid ${G.goldDim}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 2.5rem", boxShadow: "0 0 60px rgba(200,169,110,0.06)" }}>
             {svgs[si]}
@@ -660,44 +690,49 @@ export default function PilgrimsCompass() {
           <Landing onEnter={() => setScreen("app")} />
         </div>
       ) : (
-        <div className="desktop-shell">
-          {/* ── SIDEBAR ── */}
+        <div className="app-shell">
+
+          {/* ── SIDEBAR (tablet/desktop only) ── */}
           <div className="sidebar">
             <Stars count={40} />
-            {/* Logo */}
             <div style={{ padding: "2.5rem 2rem 2rem", borderBottom: `1px solid ${G.border}`, position: "relative", zIndex: 1 }}>
               <div className="cinzel" style={{ fontSize: "0.6rem", letterSpacing: "0.45em", color: G.goldDim, textTransform: "uppercase", marginBottom: "0.5rem" }}>The Pilgrim's</div>
               <div className="cinzel" style={{ fontSize: "1.3rem", fontWeight: 300, color: G.gold, letterSpacing: "0.15em" }}>Compass</div>
               <div style={{ width: 32, height: 1, background: G.goldDim, marginTop: "1rem", opacity: 0.5 }} />
             </div>
-
-            {/* Nav */}
             <nav style={{ flex: 1, padding: "1.5rem 0", position: "relative", zIndex: 1 }}>
               {CHAMBERS.map(c => {
                 const active = chamber === c.id;
                 return (
                   <div key={c.id} className="nav-item" onClick={() => setChamber(c.id)}
-                    style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "0.9rem 2rem", cursor: "pointer", position: "relative", background: active ? "rgba(200,169,110,0.05)" : "transparent", borderRight: active ? `1px solid ${G.gold}` : "1px solid transparent", transition: "all 0.5s" }}>
+                    style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "0.9rem 2rem", cursor: "pointer", background: active ? "rgba(200,169,110,0.05)" : "transparent", borderRight: active ? `1px solid ${G.gold}` : "1px solid transparent", transition: "all 0.5s" }}>
                     <span style={{ fontSize: "0.9rem", color: active ? G.gold : G.dimmer, opacity: active ? 1 : 0.6, transition: "all 0.5s", width: "1.2rem", textAlign: "center" }}>{c.sym}</span>
                     <span className="nav-label cinzel" style={{ fontSize: "0.65rem", letterSpacing: "0.22em", textTransform: "uppercase", color: active ? G.gold : G.dimmer, transition: "color 0.5s" }}>{c.label}</span>
                   </div>
                 );
               })}
             </nav>
-
-            {/* Bottom quote */}
             <div style={{ padding: "1.5rem 2rem 2rem", borderTop: `1px solid ${G.border}`, position: "relative", zIndex: 1 }}>
-              <p className="wisdom" style={{ fontSize: "0.8rem", color: G.dimmer, lineHeight: 1.7, opacity: 0.7 }}>
-                "The wound is the place where the light enters you."
-              </p>
+              <p className="wisdom" style={{ fontSize: "0.8rem", color: G.dimmer, lineHeight: 1.7, opacity: 0.7 }}>"The wound is the place where the light enters you."</p>
               <p className="cinzel" style={{ fontSize: "0.55rem", letterSpacing: "0.2em", color: G.dimmer, marginTop: "0.5rem", opacity: 0.5 }}>— Rumi</p>
             </div>
           </div>
 
           {/* ── MAIN CONTENT ── */}
           <div className="main-content">
-            {/* Top bar */}
-            <div style={{ flexShrink: 0, padding: "1.75rem 3rem", borderBottom: `1px solid ${G.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+
+            {/* Mobile top bar */}
+            <div className="mobile-topbar" style={{ borderBottom: `1px solid ${G.border}`, paddingBottom: "1rem" }}>
+              <div>
+                <div className="cinzel" style={{ fontSize: "0.55rem", letterSpacing: "0.4em", color: G.goldDim, textTransform: "uppercase" }}>The Pilgrim's</div>
+                <div className="cinzel" style={{ fontSize: "1rem", color: G.gold, letterSpacing: "0.15em" }}>Compass</div>
+              </div>
+              <span className="cinzel" style={{ fontSize: "0.55rem", letterSpacing: "0.2em", textTransform: "uppercase", color: G.dimmer }}>{CNAMES[chamber]}</span>
+            </div>
+
+            {/* Desktop top bar */}
+            <div style={{ flexShrink: 0, padding: "1.5rem 2.5rem", borderBottom: `1px solid ${G.border}`, display: "none", alignItems: "center", justifyContent: "space-between" }}
+              className="desktop-topbar">
               <span className="cinzel" style={{ fontSize: "0.62rem", letterSpacing: "0.3em", textTransform: "uppercase", color: G.dimmer }}>{CNAMES[chamber]}</span>
               <div style={{ display: "flex", gap: "0.4rem" }}>
                 {CHAMBERS.map(c => (
@@ -707,7 +742,8 @@ export default function PilgrimsCompass() {
             </div>
 
             {/* Scrollable chamber */}
-            <div ref={scrollRef} className="content-scroll" style={{ padding: "3rem" }}>
+            <div ref={scrollRef} className="content-scroll"
+              style={{ padding: "clamp(1.25rem,4vw,3rem)", paddingBottom: "calc(clamp(1.25rem,4vw,3rem) + 64px)" }}>
               <div className="fade-in" key={chamber}>
                 {chamber === "threshold" && <ChamberThreshold onSave={saveEntry} />}
                 {chamber === "oracle" && <ChamberOracle />}
@@ -719,6 +755,21 @@ export default function PilgrimsCompass() {
               </div>
             </div>
           </div>
+
+          {/* ── MOBILE BOTTOM NAV ── */}
+          <nav className="mobile-nav">
+            {CHAMBERS.map(c => {
+              const active = chamber === c.id;
+              return (
+                <div key={c.id} onClick={() => setChamber(c.id)}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.25rem", cursor: "pointer", padding: "0.3rem 0.2rem", userSelect: "none" }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: active ? G.gold : G.dimmer, boxShadow: active ? `0 0 7px ${G.gold}` : "none", transition: "all 0.5s" }} />
+                  <span className="cinzel" style={{ fontSize: "0.42rem", letterSpacing: "0.1em", textTransform: "uppercase", color: active ? G.goldDim : G.dimmer, transition: "color 0.5s", whiteSpace: "nowrap" }}>{c.label}</span>
+                </div>
+              );
+            })}
+          </nav>
+
         </div>
       )}
     </div>
